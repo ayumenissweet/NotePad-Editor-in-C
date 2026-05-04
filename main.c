@@ -29,15 +29,11 @@ int main(){
 
     HTC = charge_file(file_path, user_input);
     display_list(HTC.head);
-
+    if (HTC.head == NULL) skip = true; else skip = false;
     if (!skip) {
         while(1){
             read_input(">>",command_buffer,sizeof(command_buffer),1); 
-            if(analyse_input(HTC,command_buffer) != 0){
-                printf("ERROR : Invalid Command\n");
-            }else{
-                printf("VALID Command\n");
-            }
+            HTC = analyse_input(HTC,command_buffer,file_path);
         }
     }
     }

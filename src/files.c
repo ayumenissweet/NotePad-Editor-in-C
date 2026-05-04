@@ -10,6 +10,7 @@
 Main_L charge_file(char file_path[260], int user_input){
     FILE *F = NULL;
     char buffer[1024], c;
+    bool file_created = false;
     int f_exist;
     list *L = NULL, *P = NULL, *Q = NULL;
     Main_L HTC;
@@ -35,13 +36,12 @@ Main_L charge_file(char file_path[260], int user_input){
 
                 if( f_exist == 2 ){
                     F = fopen(file_path, "w");
-                    printf("File created at %s", file_path);
-                    fclose(F);
-                    return all_null();
+                    file_created = true;
                 } else if (f_exist == 3) return charge_file(file_path, user_input);
                 else user_input = 2;
             } else {perror("Failed to open file"); return all_null() ;}
-        } else {
+        } else file_created = true;
+        if (file_created) {
                 printf("File created at %s\n", file_path);
                 fclose(F);
 
@@ -74,6 +74,7 @@ Main_L charge_file(char file_path[260], int user_input){
             strcpy(P->ln, buffer);
             P->svt = NULL;
         }
+        strcat(P->ln, "\n");
         fclose(F);
         HTC.head = L;  HTC.current = HTC.tail = P; return HTC;
     }
@@ -81,27 +82,28 @@ Main_L charge_file(char file_path[260], int user_input){
 
 int save_file(Main_L* HTC, char file_path[260]){
     FILE* F;
-    char choice;
+    int choice;
     char formatted_file_name[265]; //pour ajouter ".txt"
     
     snprintf(formatted_file_name,sizeof(formatted_file_name),"%s.txt",file_path);
+    printf("%s\n",formatted_file_name);
     
     F = fopen(formatted_file_name,"r");
     if(F){
         while(true){
-            printf("Overwrite File [Y/n] : %s ?",formatted_file_name);  
-            choice = getchar();
-            while (getchar() != '\n') //pour eviter l'erreur si le nom de ficher est "n"
-            if(choice == 'Y' || choice == 'n') break;
+            printf("Overwrite File [1/0] : %s ?",formatted_file_name);  
+            scanf("%d",&choice);
+            if(choice == 1 || choice == 0) 
+                break;
         }   
-        if(choice == 'Y'){
+        if(choice == 1){
             fclose(F);
             F = fopen(formatted_file_name,"w");
-        }else if(choice == 'n'){
+        }else if(choice == 0){
             fclose(F);
             char new_file_path[260];
             read_input("Select new file name: ", new_file_path,260, 0);
-            save_file(HTC,new_file_path);
+            return save_file(HTC,new_file_path);
         }
     }else{
         return -1;
@@ -114,11 +116,13 @@ int save_file(Main_L* HTC, char file_path[260]){
     list* p = HTC->head; 
 
     while(p != NULL){
-        fprintf(F,"%s\n",p->ln);
+        fprintf(F,"%s",p->ln);
         p = p->svt;
     }
 
     fclose(F);
+
+    printf("Save Done!");
 
     return 0;
 }
