@@ -41,6 +41,8 @@ Main_L analyse_input(Main_L HTC,char* command,char file_path[260],int *print){
         }else if (strcmp(command_flags[0],"print") == 0){
             *print = 1;
             printf("Automatic print mode set \n");
+        }else if(strcmp(command_flags[0],"quit") == 0){
+            exit(1);
         }
 
         if(*print == 1 && strcmp(command_flags[0],"view_n") != 0 && strcmp(command_flags[0],"view") != 0){

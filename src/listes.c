@@ -105,12 +105,35 @@ Main_L swap(Main_L* HTC,int n, int m){
     list* p = find_line(*HTC, n);
     list* q = find_line(*HTC,m);
 
-    if(p == NULL || q == NULL){
-        printf(p == NULL ? "ERROR : Line N invalid" : "ERROR : line M invalid");
+    if(!p || !q){
+        printf(!p ? "ERROR : Line N invalid" : "ERROR : line M invalid");
         return *HTC;
     }
 
     if (p == q) return *HTC;
+
+    if(p->svt == q){
+        p_prev = p->prv;
+        q_svt = q->svt;
+
+        if (p_prev != NULL){
+            p_prev->svt = q;
+        }else HTC->head = q; 
+
+        if (q_svt != NULL){
+            q_svt->prv = p;
+        }else HTC->tail = p; 
+
+        q->prv = p_prev;
+        q->svt = p;
+        p->prv = q;
+        p->svt = q_svt;
+
+        if(HTC->current == p) HTC->current = q;
+        else if (HTC->current == q) HTC->current = p;
+
+        return *HTC;
+    }
 
    p_prev = p->prv;
    q_prev = q->prv;
