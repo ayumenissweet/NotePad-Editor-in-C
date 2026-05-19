@@ -18,41 +18,17 @@ Main_L charge_file(char file_path[260], int user_input){
     HTC.current = NULL;
     if (user_input != 2 && user_input != 1) return all_null();
     
+    if(user_input == 1){
+        P = (list*)malloc(sizeof(list));
+        strcpy(P->ln,"");
+        P->prv = NULL;
+        P->svt = NULL;
+        HTC = (Main_L) {P,P,P};
+        return HTC;
+    }
+    
     read_input("Enter File Path (Relative || Absolute): ",file_path, 260, 0);
 
-    if(user_input == 1){
-        F = fopen(file_path, "wx");
-        if(!F){
-            if (errno == EEXIST) { 
-                printf("File at %s already exists !\n", file_path);
-                do{
-                    printf("Would you like to:\n");
-                    printf(" 1-charge the file\n");
-                    printf(" 2-overwrite the file\n");
-                    printf(" 3-select another file\n");
-                    scanf("%d", &f_exist);
-                    while ((c = getchar()) != '\n' && c != EOF);
-                }while(f_exist < 1 || f_exist > 3);
-
-                if( f_exist == 2 ){
-                    F = fopen(file_path, "w");
-                    file_created = true;
-                } else if (f_exist == 3) return charge_file(file_path, user_input);
-                else user_input = 2;
-            } else {perror("Failed to open file"); return all_null() ;}
-        } else file_created = true;
-        if (file_created) {
-                printf("File created at %s\n", file_path);
-                fclose(F);
-
-                P = (list*)malloc(sizeof(list));
-                strcpy(P->ln,"");
-                P->prv = NULL;
-                P->svt = NULL;
-                HTC = (Main_L) {P,P,P};
-                return HTC;
-        }
-    }
     if (user_input == 2){
 
         F = fopen(file_path, "r");
@@ -74,7 +50,16 @@ Main_L charge_file(char file_path[260], int user_input){
             strcpy(P->ln, buffer);
             P->svt = NULL;
         }
-        strcat(P->ln, "\n");
+        if(strcmp(P->ln, "") != 0){
+            P->svt = (list*)malloc(sizeof(list));
+            if (P->svt == NULL) return all_null();
+            Q = P;
+            P = P->svt;
+            P->prv = Q;
+            strcpy(P->ln, "");
+            P->svt = NULL;
+        }
+        else strcat(P->ln, "");
         fclose(F);
         HTC.head = L;  HTC.current = HTC.tail = P; return HTC;
     }
@@ -82,47 +67,45 @@ Main_L charge_file(char file_path[260], int user_input){
 
 int save_file(Main_L* HTC, char file_path[260]){
     FILE* F;
-    int choice;
-    char formatted_file_name[265]; //pour ajouter ".txt"
+    int choice, f_exist;
+    char c; 
     
-    snprintf(formatted_file_name,sizeof(formatted_file_name),"%s.txt",file_path);
-    printf("%s\n",formatted_file_name);
-    
-    F = fopen(formatted_file_name,"r");
-    if(F){
-        while(true){
-            printf("Overwrite File [1/0] : %s ?",formatted_file_name);  
-            scanf("%d",&choice);
-            if(choice == 1 || choice == 0) 
-                break;
-        }   
-        if(choice == 1){
-            fclose(F);
-            F = fopen(formatted_file_name,"w");
-        }else if(choice == 0){
-            fclose(F);
-            char new_file_path[260];
-            read_input("Select new file name: ", new_file_path,260, 0);
-            return save_file(HTC,new_file_path);
+    if(strcmp(file_path, "") == 0){
+        read_input("Enter File Path (Relative || Absolute): ",file_path, 260, 0);
+
+        F = fopen(file_path, "wx");
+        if(!F){
+            if (errno == EEXIST) { 
+                printf("File at %s already exists !\n", file_path);
+                do{
+                    printf("Would you like to:\n");
+                    printf(" 1-overwrite the file\n");
+                    printf(" 2-Enter another file path\n");
+                    scanf("%d", &f_exist);
+                    while ((c = getchar()) != '\n' && c != EOF);
+                }while(f_exist < 1 || f_exist > 2);
+
+                if( f_exist == 2 ) {
+                    strcpy(file_path, "");
+                    return save_file(HTC, file_path);
+                }
+            } else {perror("Failed to open file"); return -1 ;}
         }
-    }else{
-        return -1;
     }
 
-    if(!F){
-        return -1;
-    }
+    F = fopen(file_path,"w");
+    if(!F)return -1;
 
     list* p = HTC->head; 
 
-    while(p != NULL){
+    while(p->svt != NULL){
         fprintf(F,"%s",p->ln);
         p = p->svt;
     }
 
     fclose(F);
 
-    printf("Save Done!");
+    printf("Save Done!\n");
 
     return 0;
 }

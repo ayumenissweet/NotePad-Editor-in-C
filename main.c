@@ -6,9 +6,9 @@
 #include "headers/input.h"
 
 int main(){
-    char file_path[260], buffer[1024];
+    char file_path[260] = "", buffer[1024];
     char command_buffer[1024], c;
-    int user_input;
+    int user_input,print = 0;
     bool skip = false;
     Main_L HTC;
 
@@ -33,7 +33,7 @@ int main(){
     if (!skip) {
         while(1){
             read_input(">>",command_buffer,sizeof(command_buffer),1); 
-            HTC = analyse_input(HTC,command_buffer,file_path);
+            HTC = analyse_input(HTC,command_buffer,file_path,&print);
         }
     }
     }

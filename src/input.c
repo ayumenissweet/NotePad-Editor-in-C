@@ -15,18 +15,18 @@ void read_input(char message[],char* text,int text_size,int newline){
     }
 }
 
-Main_L analyse_input(Main_L HTC,char* command,char file_path[260]){
+Main_L analyse_input(Main_L HTC,char* command,char file_path[260],int *print){
     if(command[0] == ':'){
         char* command_flags[6];
         int count = tokenize(command, command_flags);
 
         if(strcmp(command_flags[0],"i") == 0){
             if(is_number(command_flags[1]) && count > 2){
-                printf("%d\n",atoi(command_flags[1]));
-                printf("%s\n",command_flags[2]);
                 HTC = insert_line(&HTC,atoi(command_flags[1]),command_flags[2]);
-            }
-        }else if(strcmp(command_flags[0],"dl") == 0){
+        }}else if(strcmp(command_flags[0],"swap") == 0){
+            if(is_number(command_flags[1]) && is_number(command_flags[2])){
+                swap(&HTC,atoi(command_flags[1]),atoi(command_flags[2]));
+        }}else if(strcmp(command_flags[0],"dl") == 0){
             if(is_number(command_flags[1])){
                 HTC=delete_line(&HTC,atoi(command_flags[1]));
             }
@@ -35,20 +35,27 @@ Main_L analyse_input(Main_L HTC,char* command,char file_path[260]){
         }else if(strcmp(command_flags[0],"view_n") == 0){
             display_list_n(HTC.head);
         }else if(strcmp(command_flags[0],"write") == 0) {
-            file_path[strcspn(file_path,".")] = '\0'; //remove the ".txt" if the user includes it
             save_file(&HTC, file_path);
-            printf("File Saved in %s",file_path);
         }else if(is_number(command_flags[0])){
-            printf("SUCCESS!");
             HTC = move_to_line(HTC,atoi(command_flags[0]));
+        }else if (strcmp(command_flags[0],"print") == 0){
+            *print = 1;
+            printf("Automatic print mode set \n");
         }
-    }
-    else{
+
+        if(*print == 1 && strcmp(command_flags[0],"view_n") != 0 && strcmp(command_flags[0],"view") != 0){
+            display_list_n(HTC.head);
+        }
+    }else{
         HTC = modify_line(&HTC,command);
+        if (*print == 1){
+            display_list_n(HTC.head);
+        }
     }
 
     return HTC;
 }
+
 
 int tokenize(char* command, char* command_flags[6]) {
     int count = 0;

@@ -52,34 +52,6 @@ void display_odd(list *L){
     }
 }
 
-Main_L modify_line(Main_L *HTC, char new_text[1024]) {
-    if (HTC == NULL || HTC->current == NULL) {
-        printf("Error: Current line is NULL\n");
-        return *HTC; //cas impossible on peut enlever ca
-    }
-
-    strcpy(HTC->current->ln, new_text);
-
-    if (HTC->current->svt == NULL) {
-        list* p = (list*)malloc(sizeof(list));
-        if (p == NULL) {
-            printf("ERROR allocating p\n");
-            return *HTC;
-        }
-        
-        strcpy(p->ln, "");
-        p->prv = HTC->current;
-        p->svt = NULL;
-        
-        HTC->current->svt = p; 
-        
-        HTC->current = p;
-    } else {
-        HTC->current = HTC->current->svt;
-    }
-
-    return *HTC; 
-}
 
 Main_L remove_dup(Main_L HTC){
     list *L = HTC.head, *P, *Q;
@@ -99,67 +71,188 @@ Main_L remove_dup(Main_L HTC){
     return HTC;
 }
 
-Main_L swap(Main_L HTC, int n, int m){
-    list *P = HTC.head, *Q = HTC.head, *prevP = NULL, *prevQ = NULL;
-    int i = 1, tmp;
-    if (n == m) return HTC;
-    if(n > m) {tmp = n; n = m; m = tmp;}
+// Main_L swap(Main_L HTC, int n, int m){
+//     list *P = HTC.head, *Q = HTC.head, *prevP = NULL, *prevQ = NULL;
+//     int i = 1, tmp;
+//     if (n == m) return HTC;
+//     if(n > m) {tmp = n; n = m; m = tmp;}
     
-    while(i < n && P != NULL)   {prevP = P; P = P->svt; i++;}
-    if (P == NULL)  {printf("Line %d inexistant !\n", n); return HTC;}
-    i = 1;
-    while(i < m && Q != NULL)   {prevQ = Q; Q = Q->svt; i++;}
-    if (Q == NULL)  {printf("Line %d inexistant !\n", m); return HTC;}
+//     while(i < n && P != NULL)   {prevP = P; P = P->svt; i++;}
+//     if (P == NULL)  {printf("Line %d inexistant !\n", n); return HTC;}
+//     i = 1;
+//     while(i < m && Q != NULL)   {prevQ = Q; Q = Q->svt; i++;}
+//     if (Q == NULL)  {printf("Line %d inexistant !\n", m); return HTC;}
 
-    if (prevP != NULL) prevP->svt = Q; else HTC.head = Q;
-    prevQ->svt = P;
-    printf("head: %s\n", HTC.head->ln);
-    if (Q->svt != NULL){
-        Q->svt->prv = P;
-    } else HTC.tail = P;
-    printf("tail: %s\n", HTC.tail->ln);
+//     if (prevP != NULL) prevP->svt = Q; else HTC.head = Q;
+//     prevQ->svt = P;
+//     if (Q->svt != NULL){
+//         Q->svt->prv = P;
+//     } else HTC.tail = P;
 
-    list *temp = P->svt;
-    P->svt = Q->svt;    Q->svt = temp;
-    P->prv = prevQ;     Q->prv = prevP;
+//     list *temp = P->svt;
+//     P->svt = Q->svt;    Q->svt = temp;
+//     P->prv = prevQ;     Q->prv = prevP;
 
-    return HTC;
-}
+//     return HTC;
+// }
 
-Main_L insert_line(Main_L *HTC, int index,char input[300] ) {
-    list *q = (list*)malloc(sizeof(list));
-    strcat(input, "\n"); 
-    strcpy(q->ln, input);
-    q->svt = NULL;
-    q->prv =NULL;
-    if (HTC->head == HTC->tail) {
-        HTC->head->svt = q;
-        q->prv = HTC->head;
-        HTC->tail = q;
+Main_L swap(Main_L* HTC,int n, int m){
+    int temp;
+    if(n > m){temp = m;m = n; n=temp;}
+
+    list *p_prev,*p_svt,*q_prev,*q_svt;
+
+    list* p = find_line(*HTC, n);
+    list* q = find_line(*HTC,m);
+
+    if(p == NULL || q == NULL){
+        printf(p == NULL ? "ERROR : Line N invalid" : "ERROR : line M invalid");
         return *HTC;
     }
 
-    if (index <= 0) { 
-        return *HTC;
-    }
+    if (p == q) return *HTC;
 
-    list *prev = find_line(*HTC, index-1);
+   p_prev = p->prv;
+   q_prev = q->prv;
+   p_svt = p->svt;
+   q_svt = q->svt;
 
-    if (prev == NULL || prev->svt == NULL) {
-        q->prv =HTC->tail;
-        HTC->tail->svt = q;
-        HTC->tail = q;
-        return *HTC;
-    }
+   p->prv = q_prev;
+   p->svt = q_svt;
 
-    list *next =prev->svt;
-    q->svt =next;
-    q->prv =prev;
-    prev->svt =q;
-    next->prv =q;
-    HTC->current = q;
+   if(q_prev != NULL){
+        q_prev->svt = p;
+   }else{ //la tete
+    HTC->head = p;
+   }
+
+   if(q_svt != NULL){
+        q_svt->prv = p;
+   }else{ //la tail
+        HTC->tail = p;
+   }
+
+   q->prv = p_prev;
+   q->svt = p_svt;
+
+   if(p_prev != NULL){
+        p_prev->svt = q;
+   }else{ // la tete x2 
+    HTC->head = q;
+   }
+
+   if(p_svt != NULL){
+        p_svt->prv = q;
+   }else{ // la tail x2
+    HTC->tail = q;
+   }
+
+    if(HTC->current == p) HTC->current = q;
+    else if (HTC->current == q) HTC->current = p;
+
     return *HTC;
 }
+
+Main_L modify_line(Main_L *HTC, char new_text[1024])
+{
+    if (HTC == NULL || HTC->current == NULL)
+    {
+        printf("Error: Current line is NULL\n");
+        return *HTC;
+    }
+
+    strcpy(HTC->current->ln, new_text);
+
+    
+    if (HTC->current->svt == NULL)
+    {
+        list *p = (list *)malloc(sizeof(list));
+
+        if (p == NULL)
+        {
+            printf("ERROR allocating p\n");
+            return *HTC;
+        }
+
+        strcpy(p->ln, "");
+
+     p  ->prv = HTC->current;
+        p->svt = NULL;
+
+        HTC->current->svt = p;
+
+      
+        HTC->tail = p;
+
+        HTC->current = p;
+    }
+    else
+    {
+        HTC->current = HTC->current->svt;
+    }
+
+    return *HTC;
+}
+
+Main_L insert_line(Main_L *HTC, int index, char input[300])
+{
+    list *q = (list *)malloc(sizeof(list));
+
+    if (q == NULL)
+        return *HTC;
+
+    strcat(input, "\n");
+    strcpy(q->ln, input);
+
+    q->svt = NULL;
+    q->prv = NULL;
+
+  
+    if (HTC->head == NULL)
+    {
+        HTC->head = q;
+        HTC->tail = q;
+        HTC->current = q;
+        return *HTC;
+    }
+
+    
+    if (index <= 0)
+    {
+        q->svt = HTC->head;
+        HTC->head->prv = q;
+        HTC->head = q;
+        HTC->current = q;
+        return *HTC;
+    }
+
+    list *prev = find_line(*HTC, index - 1);
+
+    
+    if (prev == NULL || prev->svt == NULL)
+    {
+        q->prv = HTC->tail;
+        HTC->tail->svt = q;
+        HTC->tail = q;
+        HTC->current = q;
+        return *HTC;
+    }
+
+    
+    list *next = prev->svt;
+
+    q->svt = next;
+    q->prv = prev;
+
+    prev->svt = q;
+    next->prv = q;
+
+    HTC->current = q;
+
+    return *HTC;
+}
+
+
 
 Main_L delete_line(Main_L *HTC, int index){
     if (HTC == NULL || HTC->head == NULL)
