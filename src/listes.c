@@ -28,6 +28,7 @@ Main_L move_to_line(Main_L HTC, int index){
     return HTC;
 }
 
+//Simple linked list reading function
 void display_list(Main_L HTC){
     while(HTC.head != NULL){
         if(HTC.head == HTC.current)
@@ -43,6 +44,7 @@ void display_list(Main_L HTC){
     }
 }
 
+// parameter n fo line numbers
 void display_list_n(Main_L HTC){
     int i = 1;
     while(HTC.head != NULL){
@@ -61,6 +63,7 @@ void display_list_n(Main_L HTC){
     printf("==============\n");
 }
 
+//function to display only pair or only impair lines depending on the argument
 void display_odd(list *L){
     int i;
     if(L != NULL && L->prv == NULL) i = 1; else i = 2;
@@ -72,16 +75,17 @@ void display_odd(list *L){
     }
 }
 
+//a function to remove duplicate lines from the file (keep only the first occurence)
 Main_L remove_dup(Main_L HTC){
     list *L = HTC.head, *P, *Q;
     while(L != NULL){
         P = L->svt;
         while(P != NULL){
-            if(strcmp(P->ln, L->ln) == 0){
-                Q = P; P = P->svt;
+            if(strcmp(P->ln, L->ln) == 0){// find the node with repeated line
+                Q = P; P = P->svt;  //detach it
                 Q->prv->svt = Q->svt;
                 if(Q->svt != NULL) Q->svt->prv = Q->prv;
-                free(Q);
+                free(Q);// delete the removed node
             }else{
                 P = P->svt;
             }
@@ -92,19 +96,19 @@ Main_L remove_dup(Main_L HTC){
     HTC.tail = Q;
     return HTC;
 }
-
+//swaps two lines / nodes
 Main_L swap(Main_L HTC, int n, int m){
     list *P = HTC.head, *Q = HTC.head, *prevP = NULL, *prevQ = NULL;
     int i = 1, tmp;
     if(n == m) return HTC;
-    if(n > m){ tmp = n; n = m; m = tmp; }
-
+    if(n > m){ tmp = n; n = m; m = tmp; }// swap between n and m if n is greater just to simplify
+// line searching
     while(i < n && P != NULL){ prevP = P; P = P->svt; i++; }
-    if(P == NULL || P->svt == NULL){ printf("Line %d inexistant !\n", n); return HTC; }
+    if(P == NULL || P->svt == NULL){ printf("Line %d inexistant !\n", n); return HTC; }//inexistent line error message
     i = 1;
     while(i < m && Q != NULL){ prevQ = Q; Q = Q->svt; i++; }
     if(Q == NULL || Q->svt == NULL){ printf("Line %d inexistant !\n", m); return HTC; }
-
+//nodes swaping --quiet complicated because of the double chained list--
     if(prevP != NULL) prevP->svt = Q; else HTC.head = Q;
     prevQ->svt = P;
     if(Q->svt != NULL) Q->svt->prv = P; else HTC.tail = P;
