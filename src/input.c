@@ -21,30 +21,28 @@ Main_L analyse_input(Main_L HTC,char* command,char file_path[260],int *print,Act
         char* command_flags[6];
         int count = tokenize(command, command_flags);
 
+        if(strcmp(command_flags[0],"undo") != 0 && strcmp(command_flags[0],"redo") != 0){ //any action other than undo resets the redo stack
+            *redo_top= 0;
+        }
+
         if(strcmp(command_flags[0],"i") == 0){
             if(is_number(command_flags[1]) && count > 2){
                 HTC = insert_line(&HTC,atoi(command_flags[1]),command_flags[2]);
-
                 undo_handler(&HTC,command_flags,0,undo_stack,undo_top,redo_stack,redo_top);
-
         }}else if(strcmp(command_flags[0],"swap") == 0){
             if(is_number(command_flags[1]) && is_number(command_flags[2])){
                 HTC = swap(HTC,atoi(command_flags[1]),atoi(command_flags[2]));
-
                 undo_handler(&HTC,command_flags,0,undo_stack,undo_top,redo_stack,redo_top);
-
         }}else if(strcmp(command_flags[0],"dl") == 0){
             if(is_number(command_flags[1])){
                 list* p = find_line(HTC,atoi(command_flags[1]));
                 if(p){
                     command_flags[2] = strdup(p->ln);
                 }
-
                 command_flags[2][strcspn(command_flags[2],"\n")] = '\0';
-
                 undo_handler(&HTC,command_flags,0,undo_stack,undo_top,redo_stack,redo_top);
 
-                HTC=delete_line(&HTC,atoi(command_flags[1]));
+                HTC = delete_line(&HTC,atoi(command_flags[1]));
             }
         }else if(strcmp(command_flags[0],"view") == 0){
             display_list(HTC.head);
@@ -59,6 +57,8 @@ Main_L analyse_input(Main_L HTC,char* command,char file_path[260],int *print,Act
             printf("Automatic print mode set \n");
         }else if (strcmp(command_flags[0],"undo") == 0){
             HTC = undo_handler(&HTC,command_flags,1,undo_stack,undo_top,redo_stack,redo_top);
+        }else if(strcmp(command_flags[0],"redo") == 0){
+            HTC = redo_handler(&HTC,command_flags,undo_stack,undo_top,redo_stack,redo_top);
         }else if(strcmp(command_flags[0],"quit") == 0){
             exit(1);
         }
@@ -71,6 +71,7 @@ Main_L analyse_input(Main_L HTC,char* command,char file_path[260],int *print,Act
         if (*print == 1){
             display_list_n(HTC.head);
         }
+        *redo_top = 0;
     }
 
     return HTC;
