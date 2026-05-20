@@ -4,20 +4,19 @@
 typedef struct list{
     struct list *svt, *prv;
     char ln[1024];
-}list;
+} list;
 
 typedef struct{
     list* head;
     list* tail;
     list* current;
-}Main_L;
+} Main_L;
 
 typedef struct {
-    char action_data[6][255]; //100 for how many characters a user can slot
-}Action;
+    char action_data[6][255];
+} Action;
 
-//once we do everything, call this!
-typedef struct {
+typedef struct Status{
     Main_L HTC;
     char file_path[260];
     int print_mode;
@@ -28,6 +27,7 @@ typedef struct {
     Action redo_stack[32];
     int redo_top;
 
-}Status;
+    int skip;
+} Status;
 
 #endif

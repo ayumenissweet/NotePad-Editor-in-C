@@ -16,34 +16,33 @@ Main_L charge_file(char file_path[260], int user_input){
     Main_L HTC;
 
     HTC.current = NULL;
-    if (user_input != 2 && user_input != 1) return all_null();
-    
+    if(user_input != 2 && user_input != 1) return all_null();
+
     if(user_input == 1){
         P = (list*)malloc(sizeof(list));
-        strcpy(P->ln,"");
+        strcpy(P->ln, "");
         P->prv = NULL;
         P->svt = NULL;
-        HTC = (Main_L) {P,P,P};
+        HTC = (Main_L){P, P, P};
         return HTC;
     }
-    
-    read_input("Enter File Path (Relative || Absolute): ",file_path, 260, 0);
 
-    if (user_input == 2){
+    read_input("Enter File Path (Relative || Absolute): ", file_path, 260, 0);
 
+    if(user_input == 2){
         F = fopen(file_path, "r");
-        if(!F){perror("Failed to open file"); return all_null();}
+        if(!F){ perror("Failed to open file"); return all_null(); }
 
         P = (list*)malloc(sizeof(list));
-        if (P == NULL) return all_null();
-        if( fgets(P->ln, sizeof(P->ln), F) == NULL ) return all_null();
+        if(P == NULL) return all_null();
+        if(fgets(P->ln, sizeof(P->ln), F) == NULL) return all_null();
         P->prv = NULL;
         P->svt = L;
         L = P;
 
-        while(fgets(buffer, sizeof(buffer), F) != NULL ){
+        while(fgets(buffer, sizeof(buffer), F) != NULL){
             P->svt = (list*)malloc(sizeof(list));
-            if (P->svt == NULL) break;
+            if(P->svt == NULL) break;
             Q = P;
             P = P->svt;
             P->prv = Q;
@@ -51,67 +50,72 @@ Main_L charge_file(char file_path[260], int user_input){
             P->svt = NULL;
         }
         if(strcmp(P->ln, "") != 0){
+            if(P->ln[strlen(P->ln) - 1] != '\n') strcat(P->ln, "\n");
             P->svt = (list*)malloc(sizeof(list));
-            if (P->svt == NULL) return all_null();
+            if(P->svt == NULL) return all_null();
             Q = P;
             P = P->svt;
             P->prv = Q;
             strcpy(P->ln, "");
             P->svt = NULL;
+        }else{
+            strcat(P->ln, "");
         }
-        else strcat(P->ln, "");
         fclose(F);
-        HTC.head = L;  HTC.current = HTC.tail = P; return HTC;
+        HTC.head = L;
+        HTC.current = HTC.tail = P;
+        return HTC;
     }
+
+    return all_null();
 }
 
-int save_file(Main_L* HTC, char file_path[260]){
-    FILE* F;
+int save_file(Main_L *HTC, char file_path[260]){
+    FILE *F;
     int choice, f_exist;
-    char c; 
-    
+    char c;
+
     if(strcmp(file_path, "") == 0){
-        read_input("Enter File Path (Relative || Absolute): ",file_path, 260, 0);
+        read_input("Enter File Path (Relative || Absolute): ", file_path, 260, 0);
 
         F = fopen(file_path, "wx");
         if(!F){
-            if (errno == EEXIST) { 
+            if(errno == EEXIST){
                 printf("File at %s already exists !\n", file_path);
                 do{
                     printf("Would you like to:\n");
                     printf(" 1-overwrite the file\n");
                     printf(" 2-Enter another file path\n");
                     scanf("%d", &f_exist);
-                    while ((c = getchar()) != '\n' && c != EOF);
+                    while((c = getchar()) != '\n' && c != EOF);
                 }while(f_exist < 1 || f_exist > 2);
 
-                if( f_exist == 2 ) {
+                if(f_exist == 2){
                     strcpy(file_path, "");
                     return save_file(HTC, file_path);
                 }
-            } else {perror("Failed to open file"); return -1 ;}
+            }else{ perror("Failed to open file"); return -1; }
         }
     }
 
-    F = fopen(file_path,"w");
-    if(!F)return -1;
+    F = fopen(file_path, "w");
+    if(!F) return -1;
 
-    list* p = HTC->head; 
-
+    list *p = HTC->head;
     while(p->svt != NULL){
-        fprintf(F,"%s",p->ln);
+        fprintf(F, "%s", p->ln);
         p = p->svt;
     }
 
     fclose(F);
-
     printf("Save Done!\n");
-
     return 0;
 }
 
 Main_L all_null(){
     Main_L HTC;
-    HTC.current = NULL; HTC.head = NULL; HTC.tail = NULL;
+    HTC.current = NULL;
+    HTC.head = NULL;
+    HTC.tail = NULL;
     return HTC;
 }

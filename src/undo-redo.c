@@ -5,30 +5,30 @@
 #include "../headers/undo-redo.h"
 #include "../headers/listes.h"
 
-Action create_reverse(char* log[6]) {
+Action create_reverse(char* log[6]){
     Action new_action = {0};
 
-    if (!strcmp(log[0], "i")) {
+    if(!strcmp(log[0], "i")){
         strcpy(new_action.action_data[0], "dl");
         strcpy(new_action.action_data[1], log[1]);
-        if (log[2] != NULL) strcpy(new_action.action_data[2], log[2]);
+        if(log[2] != NULL) strcpy(new_action.action_data[2], log[2]);
 
-    } else if (!strcmp(log[0], "dl")) {
+    }else if(!strcmp(log[0], "dl")){
         strcpy(new_action.action_data[0], "i");
         strcpy(new_action.action_data[1], log[1]);
-        if (log[2] != NULL) strcpy(new_action.action_data[2], log[2]);
+        if(log[2] != NULL) strcpy(new_action.action_data[2], log[2]);
 
-    } else if (!strcmp(log[0], "swap")) {
+    }else if(!strcmp(log[0], "swap")){
         strcpy(new_action.action_data[0], "swap");
         strcpy(new_action.action_data[1], log[1]);
-        if (log[2] != NULL) strcpy(new_action.action_data[2], log[2]);
+        if(log[2] != NULL) strcpy(new_action.action_data[2], log[2]);
 
-    } else if (!strcmp(log[0], "mu")) {
+    }else if(!strcmp(log[0], "mu")){
         strcpy(new_action.action_data[0], "md");
         int pos = atoi(log[1]);
         snprintf(new_action.action_data[1], sizeof(new_action.action_data[1]), "%d", pos - 1);
 
-    } else if (!strcmp(log[0], "md")) {
+    }else if(!strcmp(log[0], "md")){
         strcpy(new_action.action_data[0], "mu");
         int pos = atoi(log[1]);
         snprintf(new_action.action_data[1], sizeof(new_action.action_data[1]), "%d", pos + 1);
@@ -37,91 +37,87 @@ Action create_reverse(char* log[6]) {
     return new_action;
 }
 
-Main_L undo_handler(Main_L* HTC, char* log[6],int action, Action undo_stack[32],int* undo_top, Action redo_stack[32],int* redo_top){
-    if(*undo_top >= 31){
+void push(Action new_action, Action stack[32], int* stack_top){
+    (*stack_top)++;
+    stack[*stack_top] = new_action;
+}
+
+Action pop(Action stack[32], int* stack_top){
+    Action act = stack[*stack_top];
+    (*stack_top)--;
+    return act;
+}
+
+void undo_handler(Status *s, char* log[6], int action){
+    if(s->undo_top >= 31){
         printf("Stack is Full!\n");
-        return *HTC;
+        return;
     }
 
     if(!action){
         Action new_action = create_reverse(log);
-
-        push(new_action,undo_stack,undo_top);
-
+        push(new_action, s->undo_stack, &s->undo_top);
         printf("Action Pushed!\n");
     }else{
-        if(*undo_top == 0){
+        if(s->undo_top == 0){
             printf("Undo Stack Is Empty!\n");
-            return *HTC;
+            return;
         }
-        Action act= pop(undo_stack,undo_top);
+        Action act = pop(s->undo_stack, &s->undo_top);
         printf("Action Undone\n");
-        if(!strcmp(act.action_data[0],"i")){
-            *HTC =  insert_line(HTC,atoi(act.action_data[1]),act.action_data[2]);
-        }else if (!strcmp(act.action_data[0],"dl")){
-            *HTC = delete_line(HTC,atoi(act.action_data[1]));
-        }else if (!strcmp(act.action_data[0],"swap")){
-            *HTC = swap(*HTC,atoi(act.action_data[1]),atoi(act.action_data[2]));
-        }else if (!strcmp(act.action_data[0],"mu")){
-            *HTC = move_line_up(HTC,atoi(act.action_data[1]));
-        }else if (!strcmp(act.action_data[0],"md")){
-            *HTC = move_line_down(HTC,atoi(act.action_data[1]));
+
+        if(!strcmp(act.action_data[0], "i")){
+            s->HTC = insert_line(&s->HTC, atoi(act.action_data[1]), act.action_data[2]);
+        }else if(!strcmp(act.action_data[0], "dl")){
+            s->HTC = delete_line(&s->HTC, atoi(act.action_data[1]));
+        }else if(!strcmp(act.action_data[0], "swap")){
+            s->HTC = swap(s->HTC, atoi(act.action_data[1]), atoi(act.action_data[2]));
+        }else if(!strcmp(act.action_data[0], "mu")){
+            s->HTC = move_line_up(&s->HTC, atoi(act.action_data[1]));
+        }else if(!strcmp(act.action_data[0], "md")){
+            s->HTC = move_line_down(&s->HTC, atoi(act.action_data[1]));
         }
 
         char* temp_log[6] = {
-        act.action_data[0],
-        act.action_data[1],
-        act.action_data[2],
-        };  
+            act.action_data[0],
+            act.action_data[1],
+            act.action_data[2],
+        };
         Action new_action = create_reverse(temp_log);
-        push(new_action,redo_stack,redo_top);
-        printf("Pushed successly : %d\n",*redo_top);
+        push(new_action, s->redo_stack, &s->redo_top);
+        printf("Pushed successfully: %d\n", s->redo_top);
     }
-    return *HTC;
 }
 
-Main_L redo_handler(Main_L* HTC, char* log[6], Action undo_stack[32],int* undo_top, Action redo_stack[32],int* redo_top){
-        if((*redo_top) == 0){
-            printf("Redo Stack Is Empty!");
-            return *HTC;
-        }
+void redo_handler(Status *s, char* log[6]){
+    if(s->redo_top == 0){
+        printf("Redo Stack Is Empty!\n");
+        return;
+    }
 
-        Action act= pop(redo_stack,redo_top); 
-        
-        printf("Action Redone\n");
-        if(!strcmp(act.action_data[0],"i")){
-            *HTC = insert_line(HTC,atoi(act.action_data[1]),act.action_data[2]);
-        }else if (!strcmp(act.action_data[0],"dl")){
-            *HTC = delete_line(HTC,atoi(act.action_data[1]));
-        }else if (!strcmp(act.action_data[0],"swap")){
-            *HTC = swap(*HTC,atoi(act.action_data[1]),atoi(act.action_data[2]));
-        }else if (!strcmp(act.action_data[0],"mu")){
-            *HTC = move_line_up(HTC,atoi(act.action_data[1]));
-        }else if (!strcmp(act.action_data[0],"md")){
-            *HTC = move_line_down(HTC,atoi(act.action_data[1]));
-        }
-        
-        char* temp_log[6] = {
+    Action act = pop(s->redo_stack, &s->redo_top);
+    printf("Action Redone\n");
+
+    if(!strcmp(act.action_data[0], "i")){
+        s->HTC = insert_line(&s->HTC, atoi(act.action_data[1]), act.action_data[2]);
+    }else if(!strcmp(act.action_data[0], "dl")){
+        s->HTC = delete_line(&s->HTC, atoi(act.action_data[1]));
+    }else if(!strcmp(act.action_data[0], "swap")){
+        s->HTC = swap(s->HTC, atoi(act.action_data[1]), atoi(act.action_data[2]));
+    }else if(!strcmp(act.action_data[0], "mu")){
+        s->HTC = move_line_up(&s->HTC, atoi(act.action_data[1]));
+    }else if(!strcmp(act.action_data[0], "md")){
+        s->HTC = move_line_down(&s->HTC, atoi(act.action_data[1]));
+    }
+
+    char* temp_log[6] = {
         act.action_data[0],
         act.action_data[1],
         act.action_data[2],
         act.action_data[3],
         act.action_data[4],
         act.action_data[5]
-        };  
-        Action new_action = create_reverse(temp_log);
-
-        push(new_action,undo_stack,undo_top);
-    return *HTC;
-}
-
-void push(Action new_action, Action stack[32],int* stack_top){
-    (*stack_top)++;
-    stack[*stack_top] = new_action;
-}
-
-Action pop(Action stack[32],int* stack_top){
-    Action act = stack[*stack_top];
-    (*stack_top)--;
-    return act;
+    };
+    Action new_action = create_reverse(temp_log);
+    push(new_action, s->undo_stack, &s->undo_top);
 }
