@@ -40,3 +40,9 @@ A notepad editor that functions similarly to Vim, with two main modes:
 | `redo`                  | Redo Action       | Reapplies the last undone command.                                                  |
 | `write`                 | Save File         | Writes and saves the current text buffer into a file.                               |
 | `quit`                  | Quit Program      | Closes the editor application.                                                      |
+
+### How to use :
+
+```bash
+    gcc src/files.c src/input.c src/listes.c src/undo-redo.c main.c -o Project && ./Project
+```

@@ -57,7 +57,6 @@ void undo_handler(Status *s, char* log[6], int action){
     if(!action){
         Action new_action = create_reverse(log);
         push(new_action, s->undo_stack, &s->undo_top);
-        printf("Action Pushed!\n");
     }else{
         if(s->undo_top == 0){
             printf("Undo Stack Is Empty!\n");
