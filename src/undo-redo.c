@@ -84,7 +84,6 @@ void undo_handler(Status *s, char* log[6], int action){
         };
         Action new_action = create_reverse(temp_log);
         push(new_action, s->redo_stack, &s->redo_top);
-        printf("Pushed successfully: %d\n", s->redo_top);
     }
 }
 
