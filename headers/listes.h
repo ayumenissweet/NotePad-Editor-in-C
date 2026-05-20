@@ -5,8 +5,8 @@
 
 list* find_line(Main_L HTC,int index);
 Main_L modify_line(Main_L *HTC, char new_text[1024]);
-void display_list(list *L);
-void display_list_n(list *L);
+void display_list(Main_L HTC);
+void display_list_n(Main_L HTC);
 void display_odd(list *L);
 Main_L remove_dup(Main_L HTC);
 Main_L move_to_line(Main_L HTC,int index);

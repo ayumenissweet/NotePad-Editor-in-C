@@ -19,7 +19,7 @@ int main(){
     printf("============================\n");
     while (true) {
     do{
-        printf("--\nChoose operation\n");
+        printf("\nChoose operation\n");
         printf("1.Create a new file\n");
         printf("2.Open an existing file\n");
         printf("3.Exit Program\n");
@@ -30,7 +30,7 @@ int main(){
     if (user_input == 3) return 0;
 
     HTC = charge_file(file_path, user_input);
-    display_list(HTC.head);
+    display_list_n(HTC);
     if (HTC.head == NULL) skip = true; else skip = false;
     if (!skip) {
         while(1){

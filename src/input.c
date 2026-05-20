@@ -54,10 +54,12 @@ Main_L analyse_input(Main_L HTC,char* command,char file_path[260],int *print,Act
                 HTC = move_line_down(&HTC,atoi(command_flags[1])); 
                 undo_handler(&HTC,command_flags,0,undo_stack,undo_top,redo_stack,redo_top);                
             }
+        }else if(strcmp(command_flags[0],"uniq") == 0){
+            HTC = remove_dup(HTC);
         }else if(strcmp(command_flags[0],"view") == 0){
-            display_list(HTC.head);
+            display_list(HTC);
         }else if(strcmp(command_flags[0],"view_n") == 0){
-            display_list_n(HTC.head);
+            display_list_n(HTC);
         }else if(strcmp(command_flags[0],"write") == 0) {
             save_file(&HTC, file_path);
         }else if(is_number(command_flags[0])){
@@ -74,19 +76,18 @@ Main_L analyse_input(Main_L HTC,char* command,char file_path[260],int *print,Act
         }
 
         if(*print == 1 && strcmp(command_flags[0],"view_n") != 0 && strcmp(command_flags[0],"view") != 0){
-            display_list_n(HTC.head);
+            display_list_n(HTC);
         }
     }else{
         HTC = modify_line(&HTC,command);
         if (*print == 1){
-            display_list_n(HTC.head);
+            display_list_n(HTC);
         }
         *redo_top = 0;
     }
 
     return HTC;
 }
-
 
 int tokenize(char* command, char* command_flags[6]) {
     int count = 0;

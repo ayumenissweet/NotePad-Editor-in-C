@@ -95,6 +95,10 @@ Main_L redo_handler(Main_L* HTC, char* log[6], Action undo_stack[32],int* undo_t
             *HTC = delete_line(HTC,atoi(act.action_data[1]));
         }else if (!strcmp(act.action_data[0],"swap")){
             *HTC = swap(*HTC,atoi(act.action_data[1]),atoi(act.action_data[2]));
+        }else if (!strcmp(act.action_data[0],"mu")){
+            *HTC = move_line_up(HTC,atoi(act.action_data[1]));
+        }else if (!strcmp(act.action_data[0],"md")){
+            *HTC = move_line_down(HTC,atoi(act.action_data[1]));
         }
         
         char* temp_log[6] = {

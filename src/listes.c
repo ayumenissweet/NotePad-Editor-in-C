@@ -2,6 +2,9 @@
 #include<stdlib.h>
 #include <string.h>
 
+#define ANSI_COLOR_RED     "\x1b[31m"
+#define ANSI_COLOR_RESET   "\x1b[0m"
+
 #include  "../headers/listes.h"
 
 list* find_line(Main_L HTC, int index){
@@ -27,18 +30,43 @@ Main_L move_to_line(Main_L HTC,int index){
     HTC.current = p;
     return HTC;
 }
-void display_list(list *L){
-    while(L != NULL){
-        printf("%s", L->ln);
-        L = L->svt;
+void display_list(Main_L HTC){
+    while(HTC.head != NULL){
+        if (HTC.head == HTC.current) {
+            printf(ANSI_COLOR_RED);
+        }
+
+        printf("%s", HTC.head->ln);
+
+        printf(ANSI_COLOR_RESET);
+        
+        if(HTC.head->svt == NULL && !strcmp(HTC.head->ln,"")){
+            printf("\n");
+        }
+
+        HTC.head = HTC.head->svt;
     }
 }
-void display_list_n(list *L){
+void display_list_n(Main_L HTC) {
     int i = 1;
-    while(L != NULL){
-        printf("%d %s", i, L->ln);
-        L = L->svt; i++;
+    
+    while (HTC.head != NULL) {
+        if (HTC.head == HTC.current) {
+            printf(ANSI_COLOR_RED);
+        }
+        
+        printf("%d %s", i, HTC.head->ln);
+        
+        printf(ANSI_COLOR_RESET);
+
+        if(HTC.head->svt == NULL && !strcmp(HTC.head->ln,"")){
+            printf("\n");
+        }
+        
+        HTC.head = HTC.head->svt; 
+        i++;
     }
+    printf("==============\n");
 }
 void display_odd(list *L){
     int i;
