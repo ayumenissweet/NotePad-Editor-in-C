@@ -5,20 +5,35 @@
 #include "../headers/undo-redo.h"
 #include "../headers/listes.h"
 
-Action create_reverse(char* log[6]){
-    Action new_action;
-    
-    if(!strcmp(log[0],"i")){
-        strcpy(new_action.action_data[0],"dl"); 
-    }else if(!strcmp(log[0],"dl")){
-        strcpy(new_action.action_data[0],"i"); 
-    }else{
-        strcpy(new_action.action_data[0],"swap"); 
+Action create_reverse(char* log[6]) {
+    Action new_action = {0};
+
+    if (!strcmp(log[0], "i")) {
+        strcpy(new_action.action_data[0], "dl");
+        strcpy(new_action.action_data[1], log[1]);
+        if (log[2] != NULL) strcpy(new_action.action_data[2], log[2]);
+
+    } else if (!strcmp(log[0], "dl")) {
+        strcpy(new_action.action_data[0], "i");
+        strcpy(new_action.action_data[1], log[1]);
+        if (log[2] != NULL) strcpy(new_action.action_data[2], log[2]);
+
+    } else if (!strcmp(log[0], "swap")) {
+        strcpy(new_action.action_data[0], "swap");
+        strcpy(new_action.action_data[1], log[1]);
+        if (log[2] != NULL) strcpy(new_action.action_data[2], log[2]);
+
+    } else if (!strcmp(log[0], "mu")) {
+        strcpy(new_action.action_data[0], "md");
+        int pos = atoi(log[1]);
+        snprintf(new_action.action_data[1], sizeof(new_action.action_data[1]), "%d", pos - 1);
+
+    } else if (!strcmp(log[0], "md")) {
+        strcpy(new_action.action_data[0], "mu");
+        int pos = atoi(log[1]);
+        snprintf(new_action.action_data[1], sizeof(new_action.action_data[1]), "%d", pos + 1);
     }
-    //this works for insert,delete,redo
-    strcpy(new_action.action_data[1],log[1]); 
-    strcpy(new_action.action_data[2],log[2]); 
-    
+
     return new_action;
 }
 
@@ -47,6 +62,10 @@ Main_L undo_handler(Main_L* HTC, char* log[6],int action, Action undo_stack[32],
             *HTC = delete_line(HTC,atoi(act.action_data[1]));
         }else if (!strcmp(act.action_data[0],"swap")){
             *HTC = swap(*HTC,atoi(act.action_data[1]),atoi(act.action_data[2]));
+        }else if (!strcmp(act.action_data[0],"mu")){
+            *HTC = move_line_up(HTC,atoi(act.action_data[1]));
+        }else if (!strcmp(act.action_data[0],"md")){
+            *HTC = move_line_down(HTC,atoi(act.action_data[1]));
         }
 
         char* temp_log[6] = {

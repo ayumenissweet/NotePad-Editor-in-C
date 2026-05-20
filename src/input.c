@@ -44,6 +44,16 @@ Main_L analyse_input(Main_L HTC,char* command,char file_path[260],int *print,Act
 
                 HTC = delete_line(&HTC,atoi(command_flags[1]));
             }
+        }else if(strcmp(command_flags[0],"mu") == 0){
+            if(is_number(command_flags[1])){
+                HTC = move_line_up(&HTC,atoi(command_flags[1])); 
+                undo_handler(&HTC,command_flags,0,undo_stack,undo_top,redo_stack,redo_top);                
+            }
+        }else if(strcmp(command_flags[0],"md") == 0){
+            if(is_number(command_flags[1])){
+                HTC = move_line_down(&HTC,atoi(command_flags[1])); 
+                undo_handler(&HTC,command_flags,0,undo_stack,undo_top,redo_stack,redo_top);                
+            }
         }else if(strcmp(command_flags[0],"view") == 0){
             display_list(HTC.head);
         }else if(strcmp(command_flags[0],"view_n") == 0){
@@ -53,8 +63,8 @@ Main_L analyse_input(Main_L HTC,char* command,char file_path[260],int *print,Act
         }else if(is_number(command_flags[0])){
             HTC = move_to_line(HTC,atoi(command_flags[0]));
         }else if (strcmp(command_flags[0],"print") == 0){
-            *print = 1;
-            printf("Automatic print mode set \n");
+            *print = ((*print) + 1) % 2;
+            printf(*print == 1 ? "automatic print mode set!\n" : "automatic print mode reset!\n");
         }else if (strcmp(command_flags[0],"undo") == 0){
             HTC = undo_handler(&HTC,command_flags,1,undo_stack,undo_top,redo_stack,redo_top);
         }else if(strcmp(command_flags[0],"redo") == 0){

@@ -243,3 +243,47 @@ Main_L delete_line(Main_L *HTC, int index){
 
     return *HTC;
 }
+Main_L move_line_up(Main_L* HTC, int index)
+{
+    if(HTC == NULL || HTC->head == NULL)
+        return *HTC;
+
+    
+    if(index == 1){
+        printf("ERROR : First line can't move up\n");
+        return *HTC;
+    }
+
+    
+    list* p = find_line(*HTC, index);
+
+    if(p == NULL){
+        printf("ERROR : Invalid line\n");
+        return *HTC;
+    }
+
+    
+    return swap(*HTC, index - 1, index);
+}
+Main_L move_line_down(Main_L* HTC, int index)
+{
+    if(HTC == NULL || HTC->head == NULL)
+        return *HTC;
+
+    
+    list* p = find_line(*HTC, index);
+
+    if(p == NULL){
+        printf("ERROR : Invalid line\n");
+        return *HTC;
+    }
+
+    
+    if(p->svt == NULL){
+        printf("ERROR : Last line can't move down\n");
+        return *HTC;
+    }
+
+    
+    return swap(*HTC, index, index + 1);
+}
