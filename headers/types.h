@@ -12,4 +12,22 @@ typedef struct{
     list* current;
 }Main_L;
 
+typedef struct {
+    char action_data[6][255]; //100 for how many characters a user can slot
+}Action;
+
+//once we do everything, call this!
+typedef struct {
+    Main_L HTC;
+    char file_path[260];
+    int print_mode;
+
+    Action undo_stack[32];
+    int undo_top;
+
+    Action redo_stack[32];
+    int redo_top;
+
+}Status;
+
 #endif

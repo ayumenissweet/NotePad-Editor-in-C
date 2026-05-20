@@ -19,7 +19,6 @@ list* find_line(Main_L HTC, int index){
 
     return p;
 }
-
 Main_L move_to_line(Main_L HTC,int index){
     list* p = find_line(HTC,index);
     if(!p){
@@ -28,7 +27,6 @@ Main_L move_to_line(Main_L HTC,int index){
     HTC.current = p;
     return HTC;
 }
-
 void display_list(list *L){
     while(L != NULL){
         printf("%s", L->ln);
@@ -51,8 +49,6 @@ void display_odd(list *L){
         L = L->svt; i += 2;
     }
 }
-
-
 Main_L remove_dup(Main_L HTC){
     list *L = HTC.head, *P, *Q;
     while(L != NULL){
@@ -70,112 +66,30 @@ Main_L remove_dup(Main_L HTC){
     HTC.current = Q;    HTC.tail = Q;
     return HTC;
 }
+Main_L swap(Main_L HTC, int n, int m){
+        list *P = HTC.head, *Q = HTC.head, *prevP = NULL, *prevQ = NULL;
+        int i = 1, tmp;
+        if (n == m) return HTC;
+        if(n > m) {tmp = n; n = m; m = tmp;}
+        
+        while(i < n && P != NULL)   {prevP = P; P = P->svt; i++;}
+        if (P == NULL || P->svt == NULL)  {printf("Line %d inexistant !\n", n); return HTC;}
+        i = 1;
+        while(i < m && Q != NULL)   {prevQ = Q; Q = Q->svt; i++;}
+        if (Q == NULL || Q->svt == NULL)  {printf("Line %d inexistant !\n", m); return HTC;}
 
-// Main_L swap(Main_L HTC, int n, int m){
-//     list *P = HTC.head, *Q = HTC.head, *prevP = NULL, *prevQ = NULL;
-//     int i = 1, tmp;
-//     if (n == m) return HTC;
-//     if(n > m) {tmp = n; n = m; m = tmp;}
-    
-//     while(i < n && P != NULL)   {prevP = P; P = P->svt; i++;}
-//     if (P == NULL)  {printf("Line %d inexistant !\n", n); return HTC;}
-//     i = 1;
-//     while(i < m && Q != NULL)   {prevQ = Q; Q = Q->svt; i++;}
-//     if (Q == NULL)  {printf("Line %d inexistant !\n", m); return HTC;}
+        if (prevP != NULL) prevP->svt = Q; else HTC.head = Q;
+        prevQ->svt = P;
+        if (Q->svt != NULL){
+            Q->svt->prv = P;
+        } else HTC.tail = P;
 
-//     if (prevP != NULL) prevP->svt = Q; else HTC.head = Q;
-//     prevQ->svt = P;
-//     if (Q->svt != NULL){
-//         Q->svt->prv = P;
-//     } else HTC.tail = P;
+        list *temp = P->svt;
+        P->svt = Q->svt;    Q->svt = temp;
+        P->prv = prevQ;     Q->prv = prevP;
 
-//     list *temp = P->svt;
-//     P->svt = Q->svt;    Q->svt = temp;
-//     P->prv = prevQ;     Q->prv = prevP;
-
-//     return HTC;
-// }
-
-Main_L swap(Main_L* HTC,int n, int m){
-    int temp;
-    if(n > m){temp = m;m = n; n=temp;}
-
-    list *p_prev,*p_svt,*q_prev,*q_svt;
-
-    list* p = find_line(*HTC, n);
-    list* q = find_line(*HTC,m);
-
-    if(!p || !q){
-        printf(!p ? "ERROR : Line N invalid" : "ERROR : line M invalid");
-        return *HTC;
-    }
-
-    if (p == q) return *HTC;
-
-    if(p->svt == q){
-        p_prev = p->prv;
-        q_svt = q->svt;
-
-        if (p_prev != NULL){
-            p_prev->svt = q;
-        }else HTC->head = q; 
-
-        if (q_svt != NULL){
-            q_svt->prv = p;
-        }else HTC->tail = p; 
-
-        q->prv = p_prev;
-        q->svt = p;
-        p->prv = q;
-        p->svt = q_svt;
-
-        if(HTC->current == p) HTC->current = q;
-        else if (HTC->current == q) HTC->current = p;
-
-        return *HTC;
-    }
-
-   p_prev = p->prv;
-   q_prev = q->prv;
-   p_svt = p->svt;
-   q_svt = q->svt;
-
-   p->prv = q_prev;
-   p->svt = q_svt;
-
-   if(q_prev != NULL){
-        q_prev->svt = p;
-   }else{ //la tete
-    HTC->head = p;
-   }
-
-   if(q_svt != NULL){
-        q_svt->prv = p;
-   }else{ //la tail
-        HTC->tail = p;
-   }
-
-   q->prv = p_prev;
-   q->svt = p_svt;
-
-   if(p_prev != NULL){
-        p_prev->svt = q;
-   }else{ // la tete x2 
-    HTC->head = q;
-   }
-
-   if(p_svt != NULL){
-        p_svt->prv = q;
-   }else{ // la tail x2
-    HTC->tail = q;
-   }
-
-    if(HTC->current == p) HTC->current = q;
-    else if (HTC->current == q) HTC->current = p;
-
-    return *HTC;
+        return HTC;
 }
-
 Main_L modify_line(Main_L *HTC, char new_text[1024])
 {
     if (HTC == NULL || HTC->current == NULL)
@@ -216,8 +130,7 @@ Main_L modify_line(Main_L *HTC, char new_text[1024])
 
     return *HTC;
 }
-
-Main_L insert_line(Main_L *HTC, int index, char input[300])
+Main_L insert_line(Main_L *HTC, int index, char input[255])
 {
     list *q = (list *)malloc(sizeof(list));
 
@@ -240,7 +153,7 @@ Main_L insert_line(Main_L *HTC, int index, char input[300])
     }
 
     
-    if (index <= 0)
+    if (index == 1)
     {
         q->svt = HTC->head;
         HTC->head->prv = q;
@@ -274,10 +187,8 @@ Main_L insert_line(Main_L *HTC, int index, char input[300])
 
     return *HTC;
 }
-
-
-
 Main_L delete_line(Main_L *HTC, int index){
+
     if (HTC == NULL || HTC->head == NULL)
         return *HTC;
 
