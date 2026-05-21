@@ -6,7 +6,6 @@
 #include "headers/input.h"
 #include "headers/undo-redo.h"
 
-#include <stdio.h>
 #include <wchar.h>    
 #include <locale.h>  
 
