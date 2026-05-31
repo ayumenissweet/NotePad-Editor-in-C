@@ -1,131 +1,96 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
 #include <string.h>
-#include <errno.h>
 
+#include "../headers/types.h"
 #include "../headers/files.h"
 #include "../headers/input.h"
+#include "../headers/nodes.h"
 
-Main_L charge_file(char file_path[260], int user_input){
+void save_file(Main_List HTC, char file_path[255]){
+    if(strcmp(file_path, "") == 0) {
+        while(1) {
+            read_input("Input a file name : ", file_path, 255);
 
-    FILE *F = NULL;
-    char buffer[1024], c;
-    bool file_created = false;
-    int f_exist;
-    list *L = NULL, *P = NULL, *Q = NULL;
-    Main_L HTC;
-//initialisations
+            FILE* F = fopen(file_path, "wx");
+            if (F != NULL) {
+                //file does not exist
+                fclose(F);
+                break; 
+            }
 
-    HTC.current = NULL;
-    if(user_input != 2 && user_input != 1) return all_null();  
-//emergency exist if abnormal user input
+            //file does exist
+            char c; 
+            int choice = 0;
+            printf("File already exists!\n");
+            printf("Would you like to :\n");
+            printf("1. Try creating a different file\n");
+            printf("2. Overwrite the file\n");
+            
+            do {
+                if (scanf("%d", &choice) != 1) {
+                    choice = 0; 
+                }
+                while((c = getchar()) != '\n' && c != EOF);
+            } while(choice < 1 || choice > 2);
 
-    if(user_input == 1){
-        P = (list*)malloc(sizeof(list));
-        strcpy(P->ln, "");
-        P->prv = NULL;
-        P->svt = NULL;
-        HTC = (Main_L){P, P, P};
-        return HTC;
-    }
-//if we create a new file then we don't choose it's name until we decide save it
-
-    read_input("Enter File Path (Relative || Absolute): ", file_path, 260, 0);
-//the file path can be either relative or absolute so a simple file name is enough for files in the same folder
-
-    if(user_input == 2){
-        F = fopen(file_path, "r");
-        if(!F){ perror("Failed to open file"); return all_null(); }
-//this handles logical file creation failure
-
-//preparing FIFO
-        P = (list*)malloc(sizeof(list));
-        if(P == NULL) return all_null();
-        if(fgets(P->ln, sizeof(P->ln), F) == NULL) return all_null();
-        P->prv = NULL;
-        P->svt = L;
-        L = P;
-//FIFO Linked list creation
-        while(fgets(buffer, sizeof(buffer), F) != NULL){
-            P->svt = (list*)malloc(sizeof(list));
-            if(P->svt == NULL) break;
-            Q = P;
-            P = P->svt;
-            P->prv = Q;
-            strcpy(P->ln, buffer);
-            P->svt = NULL;
+            if (choice == 2) {
+                break; 
+            }
         }
-//we want the last line to be an empty new line to allow quicker user insertion after re-opening
-//for this we need this check
-        if(strcmp(P->ln, "") != 0){
-            if(P->ln[strlen(P->ln) - 1] != '\n') strcat(P->ln, "\n");//add the new line caracter if it doesn't exist
-            P->svt = (list*)malloc(sizeof(list));//add a new empty line at the last
-            if(P->svt == NULL) return all_null();
-            Q = P;
-            P = P->svt;
-            P->prv = Q;
-            strcpy(P->ln, "");
-            P->svt = NULL;
-        }else{
-            strcat(P->ln, "");
-        }
-        fclose(F);
-        HTC.head = L;
-        HTC.current = HTC.tail = P; //P points actulally to the tail, andthe user is intended to insert at the end
-        return HTC;
     }
 
-    return all_null();// just an emergency exit
+    FILE* F = fopen(file_path, "w");
+    if(!F){
+        printf("Error opening file\n");
+        return;
+    }
+
+    Node* p = HTC.head;
+    while(p != NULL){
+        fprintf(F, "%s", p->line); 
+        if(p->svt == NULL && !strcmp(p->line,"")){
+            break;
+        }
+        fprintf(F,"\n");
+        p = p->svt;
+    }
+    
+    fclose(F);
 }
 
-int save_file(Main_L *HTC, char file_path[260]){
-    FILE *F;
-    int choice, f_exist;
-    char c;
+Main_List read_file(char file_path[255]) {
+    char buffer[1024];
+    Main_List HTC = {NULL,NULL,NULL};
+    Node *p = NULL, *prv_p = NULL;
 
-    if(strcmp(file_path, "") == 0){
-        read_input("Enter File Path (Relative || Absolute): ", file_path, 260, 0);
-
-        F = fopen(file_path, "wx");
-        if(!F){
-            if(errno == EEXIST){
-                printf("File at %s already exists !\n", file_path);
-                do{
-                    printf("Would you like to:\n");
-                    printf(" 1-overwrite the file\n");
-                    printf(" 2-Enter another file path\n");
-                    scanf("%d", &f_exist);
-                    while((c = getchar()) != '\n' && c != EOF);
-                }while(f_exist < 1 || f_exist > 2);
-
-                if(f_exist == 2){
-                    strcpy(file_path, "");
-                    return save_file(HTC, file_path);
-                }
-            }else{ perror("Failed to open file"); return -1; }
-        }
+    FILE *F = fopen(file_path, "r");
+    if (!F) {
+        printf("File not found!\n");
+        return (Main_List){NULL, NULL, NULL};
     }
 
-    F = fopen(file_path, "w");
-    if(!F) return -1;
+    while (fgets(buffer, sizeof(buffer), F) != NULL) {
+        buffer[strcspn(buffer, "\n")] = '\0';
+        p = create_node(buffer);
 
-    list *p = HTC->head;
-    while(p->svt != NULL){
-        fprintf(F, "%s", p->ln);
-        p = p->svt;
+        if (HTC.head == NULL) {
+            HTC.head = p;
+            p->prv = NULL;
+        } else {
+            p->prv = prv_p;
+            prv_p->svt = p;   
+        }
+        prv_p = p;          
+    }
+    HTC.tail = HTC.current = prv_p;
+
+    if(p == NULL){ //file exists but just... empty
+        strcpy(buffer,"");
+        Node *p = create_node(buffer);
+        HTC = (Main_List) {p,p,p}; //create a single empty node
     }
 
     fclose(F);
-    printf("Save Done!\n");
-    return 0;
-}
-
-// a function that quicly returns an all NULL HTC variable
-Main_L all_null(){
-    Main_L HTC;
-    HTC.current = NULL;
-    HTC.head = NULL;
-    HTC.tail = NULL;
     return HTC;
 }
